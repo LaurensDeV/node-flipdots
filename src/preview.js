@@ -9,17 +9,24 @@ http
       <html><body style="margin:0;background:#fff;display:flex;justify-content:center;align-items:center">
         <img id="frame" src="/frame.png" style="image-rendering:pixelated;">
         <script>
-          function updateFrame(time) {
-            document.getElementById('frame').src = '/frame.png?t=' + time;
-            requestAnimationFrame(updateFrame);
-          }
-          requestAnimationFrame(updateFrame);
+          // The board only redraws when the number changes, so a slow poll is plenty.
+          setInterval(() => {
+            document.getElementById('frame').src = '/frame.png?t=' + Date.now();
+          }, 1000);
         </script>
       </body></html>
     `);
 		} else if (req.url.startsWith("/frame.png")) {
-			res.writeHead(200, { "Content-Type": "image/png" });
-			res.end(fs.readFileSync("./output/frame.png"));
+			try {
+				const frame = fs.readFileSync("./output/frame.png");
+				res.writeHead(200, { "Content-Type": "image/png" });
+				res.end(frame);
+			} catch {
+				// No frame rendered yet - don't take the process down over it.
+				res.writeHead(404).end();
+			}
+		} else {
+			res.writeHead(404).end();
 		}
 	})
 	.listen(3000);

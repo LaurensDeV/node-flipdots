@@ -11,6 +11,26 @@ This project provides a framework for generating animations for flipdot displays
 - Provides a real-time web preview
 - Outputs frames as PNG images
 
+## What the Board Shows
+
+The board displays the "lives touched" counter from
+[`https://observatory.owow.dev/lives-touched`](https://observatory.owow.dev/lives-touched)
+(plain text, e.g. `24`) under a `LIVES TOUCHED` caption.
+
+- The number is fetched on start-up and refreshed every 15 minutes (`REFRESH_INTERVAL`).
+- A failed fetch is retried after 30 seconds (`RETRY_INTERVAL`) and keeps the last known
+  number on the board; `--` is shown only until the first fetch succeeds.
+- The canvas is only redrawn when the number changes, so the dots stay put in between.
+- Between 1,000,000,000 and 1,000,100,000 (`CELEBRATION_RANGE`) the board drops the counter
+  and shows `1 BILLION` with confetti around it.
+- Crossing into that range - a fetch below a billion followed by one inside it - twinkles the
+  confetti once per second (`TWINKLE_INTERVAL`) for at most a minute (`TWINKLE_DURATION`).
+  After that the starfield holds still and the board is back to changing only when the number
+  does. Any other in-range value shows the message without moving a dot, so a restart long
+  after the milestone does not throw a second party.
+
+Endpoint, caption and timings live in `src/settings.js`.
+
 ## Installation
 
 Make sure you have [Node.js](https://nodejs.org/en) installed.
@@ -40,6 +60,8 @@ Once running:
 ## Project Structure
 
 - `src/index.js` - Main entry point that sets up the canvas, rendering loop, and example animations
+- `src/lives-touched.js` - Fetches the number from the observatory endpoint and keeps it fresh
+- `src/celebration.js` - The `1 BILLION` screen: message plus twinkling confetti
 - `src/ticker.js` - Handles the timing mechanism (like requestAnimationFrame for Node.js)
 - `src/preview.js` - Creates a simple HTTP server for real-time preview in the browser
 - `src/settings.js` - Configuration for display resolution, panel layout, and framerate
